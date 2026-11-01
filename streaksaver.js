@@ -180,7 +180,7 @@ whenOn("saver", "Streak Saver", () => {
       `<p class="tbc-gaveup__sub"></p>` +
       `<button type="button" class="tbc-gaveup__ok">OK</button>` +
       `</div>`;
-    box.querySelector(".tbc-gaveup__tom").src = chrome.runtime.getURL("icons/icon128.png");
+    box.querySelector(".tbc-gaveup__tom").src = chrome.runtime.getURL("icons/tom128.png");
     box.querySelector(".tbc-gaveup__msg").textContent = saved
       ? `Streak saved with ${info.channel}`
       : "Twitch be twitching. Tom did his best, but you can take it up with Bezos.";

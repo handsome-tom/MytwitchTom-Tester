@@ -17,14 +17,9 @@
     gap: 8px;
     padding: 0 14px 8px;
   }
-  header img {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-  }
-  h1 {
-    margin: 0;
-    font-size: 15px;
+  header .logo {
+    display: block;
+    height: 30px;
   }
   .row {
     display: flex;
@@ -98,7 +93,7 @@
 </style>
 </head>
 <body>
-  <header><img src="icons/icon48.png" alt=""><h1>Twitch Space</h1></header>
+  <header><img class="logo" src="icons/lockup-white.svg" alt="Twitch Space"></header>
   <div id="list"></div>
   <footer><span id="note">Changes apply when you refresh Twitch.</span></footer>
   <script src="switches.js"></script>

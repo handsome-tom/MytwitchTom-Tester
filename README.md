@@ -6,16 +6,16 @@ A Chrome extension of small upgrades for watching Twitch: player controls, emote
 
 ## Install in Brave or Chrome (about 1 minute)
 
-1. Download **[TwitchSpace-2.3.zip](../../releases/latest/download/TwitchSpace-2.3.zip)**.
+1. Download **[TwitchSpace-2.4.zip](../../releases/latest/download/TwitchSpace-2.4.zip)**.
 2. Unzip it. You get a folder called `Twitch Space`. Put it somewhere it can stay, like Documents; your browser loads the extension from that folder every time.
 3. Go to `brave://extensions` in Brave, or `chrome://extensions` in Chrome.
 4. Turn on **Developer mode** (switch in the top-right corner).
 5. Click **Load unpacked** and choose the `Twitch Space` folder.
 6. Open or refresh any twitch.tv tab.
 
-**Already have an older version?** On the extensions page click **Remove** on the old card, called MytwitchTom before 2.3 (and confirm), delete the old folder, then do the steps above with the new zip. Removing it clears its saved phrases, notes, pins and markers, so jot down anything you want to keep first.
+**Updating from 2.3?** Replace everything inside your existing `Twitch Space` folder with the new files, then click the reload arrow on the Twitch Space card at `brave://extensions` (or `chrome://extensions`). That keeps your saved phrases, notes, pins and markers. **Still on MytwitchTom?** Remove its card, delete the old folder, then do the steps above.
 
-The [release](../../releases/latest) also has **TwitchSpace-2.3-Guide.pdf**, which shows what every feature does.
+The [release](../../releases/latest) also has **TwitchSpace-2.4-Guide.pdf**, which shows what every feature does.
 
 ## Features
 
@@ -25,7 +25,7 @@ The [release](../../releases/latest) also has **TwitchSpace-2.3-Guide.pdf**, whi
 - **Channel points:** reward search; favorite rewards shown above the rest; the Claim Bonus button is clicked for you.
 - **People:** right-click a chatter for notes, pronouns and where you know them from; an account switcher in the avatar menu.
 - **Pinned channels:** a Pin button next to Follow puts a channel in a Pinned Channels list at the top of the sidebar, live or not.
-- **Ask the Streamer:** an Ask button in the channel header sends the streamer a private question (as a whisper); once you've connected, questions pop up as a card at the top of their chat with one-click answers, and the answer comes back with its icon. Both need Twitch Space, and both have to add each other first, so strangers can't send questions.
+- **Streamer Buddy System (handshake):** a handshake next to Twitch's search bar (and a small one in the chat header) opens a hub in the side panel for quick questions with the streamer and anyone else you've connected with: one-tap answers, read receipts, who's online, history, tags and asking everyone. Streamers can use the same hub in OBS (see the guide); it's a separate project, [streamer-buddy-system](https://github.com/handsome-tom/streamer-buddy-system).
 - **Split screen:** watch two streams side by side, each with its own chat, with a sound menu to pick which one you hear.
 - **Bookmarks and VODs:** the bookmark button marks your spot and opens your marker list (× deletes); live marks sit on the live timeline and carry over to the VOD; VOD markers with notes.
 

@@ -1,10 +1,10 @@
 // Background helper for the Auto Streak Saver (streaksaver.js). Pages can't open
 // windows by themselves without a click (Chrome's pop-up blocker), but the
 // extension can, so the page asks this to open, recognise and close the saver window.
+// It also opens the hub's side panel for the handshake button (hub.js).
 //
 // Saved in chrome.storage.local:
 //   "streakSaverTab"  id of the tab inside the saver window
-//   "askSenderTab"    id of the tab in the window sending Ask the Streamer whispers
 
 chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   // Minimized, so it stays out of sight, and the tab muted, so nothing is heard
@@ -27,47 +27,13 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
     chrome.windows.remove(sender.tab.windowId);
   }
 
-  // Ask the Streamer (askstreamer.js): a small window on a Twitch settings page
-  // sends the waiting whispers from Twitch's whisper window, then asks to be closed. One at a time;
-  // a window already sending picks up anything queued meanwhile.
-  if (msg.type === "openAskSender") {
-    chrome.storage.local.get("askSenderTab", (d) => {
-      const open = d.askSenderTab ? chrome.tabs.get(d.askSenderTab).then(() => true, () => false) : Promise.resolve(false);
-      open.then((busy) => {
-        if (busy) return;
-        chrome.windows.create(
-          // Same side as the page that asked: an Incognito page's whisper goes out
-          // from Incognito (its own Twitch sign-in), not from your normal window.
-          { url: msg.url, type: "popup", width: 420, height: 520, left: msg.left, top: msg.top, focused: false,
-            incognito: !!sender.tab?.incognito },
-          (win) => chrome.storage.local.set({ askSenderTab: win.tabs[0].id }),
-        );
-      });
-    });
-  }
-
-  if (msg.type === "amAskSender") {
-    chrome.storage.local.get("askSenderTab", (d) => reply(!!sender.tab && d.askSenderTab === sender.tab.id));
-    return true; // reply comes later
-  }
-
-  // Your recent whispers, for Ask the Streamer (askstreamer.js). Asked from
-  // here because a page's own scripts can't send your sign-in to Twitch's data
-  // service; the token is the page's own and only goes to Twitch.
-  if (msg.type === "askWhispers") {
-    fetch("https://gql.twitch.tv/gql", {
-      method: "POST",
-      headers: { "Client-Id": "kimne78kx3ncx6brgo4mv6wki5h1ko", Authorization: `OAuth ${msg.token}` },
-      body: JSON.stringify({ query: msg.query }),
-    })
-      .then((r) => r.json())
-      .then(reply, (e) => reply({ error: String(e) }));
-    return true; // reply comes later
-  }
-
-  if (msg.type === "askSenderDone" && sender.tab) {
-    chrome.storage.local.remove("askSenderTab");
-    chrome.windows.remove(sender.tab.windowId);
+  // The handshake button (hub.js): open the hub (hub.html) in Chrome's side
+  // panel for this tab. Called straight away, so it still counts as the click
+  // Chrome needs; if Chrome won't, the hub opens in a small window instead.
+  if (msg.type === "openHub" && sender.tab) {
+    chrome.sidePanel
+      .open({ tabId: sender.tab.id })
+      .catch(() => chrome.windows.create({ url: "hub.html", type: "popup", width: 400, height: 680 }));
   }
 });
 
