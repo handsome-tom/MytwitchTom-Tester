@@ -6,7 +6,7 @@ A Chrome extension of small upgrades for watching Twitch: player controls, emote
 
 ## Install in Brave or Chrome (about 1 minute)
 
-1. Download **[TwitchSpace-2.4.zip](../../releases/latest/download/TwitchSpace-2.4.zip)**.
+1. Download **[TwitchSpace-2.4.2.zip](../../releases/latest/download/TwitchSpace-2.4.2.zip)**.
 2. Unzip it. You get a folder called `Twitch Space`. Put it somewhere it can stay, like Documents; your browser loads the extension from that folder every time.
 3. Go to `brave://extensions` in Brave, or `chrome://extensions` in Chrome.
 4. Turn on **Developer mode** (switch in the top-right corner).
@@ -15,7 +15,7 @@ A Chrome extension of small upgrades for watching Twitch: player controls, emote
 
 **Updating from 2.3?** Replace everything inside your existing `Twitch Space` folder with the new files, then click the reload arrow on the Twitch Space card at `brave://extensions` (or `chrome://extensions`). That keeps your saved phrases, notes, pins and markers. **Still on MytwitchTom?** Remove its card, delete the old folder, then do the steps above.
 
-The [release](../../releases/latest) also has **TwitchSpace-2.4-Guide.pdf**, which shows what every feature does.
+The [release](../../releases/latest) also has **TwitchSpace-2.4.2-Guide.pdf**, which shows what every feature does.
 
 ## Features
 
