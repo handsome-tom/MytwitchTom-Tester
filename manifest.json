@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Twitch Space",
-  "version": "2.4.0",
+  "version": "2.4.2",
   "description": "Upgrades for watching Twitch: player, emotes, chat, watch streaks, VOD markers and split screen.",
   "content_scripts": [
     {
@@ -28,7 +28,9 @@
         "claim.js",
         "splitview.js",
         "pinchannels.js",
-        "hub.js"
+        "hub.js",
+        "flag.js",
+        "clearnotifs.js"
       ],
       "run_at": "document_idle",
       "exclude_matches": [

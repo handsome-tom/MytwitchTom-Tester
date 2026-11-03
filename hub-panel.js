@@ -16,6 +16,11 @@ frame.src = `${HUB}?embed=ext`;
 addEventListener("message", (e) => {
   if (e.origin !== HUB_ORIGIN || e.source !== frame.contentWindow) return;
   if (e.data?.t === "hub-signin") signIn();
+  // The hub's sign-in, for flagging chat lines from Twitch's page (background.js).
+  if (e.data?.t === "hub-signed-in") {
+    if (e.data.token) chrome.storage.local.set({ hubToken: e.data.token });
+    else chrome.storage.local.remove("hubToken");
+  }
 });
 
 async function signIn() {

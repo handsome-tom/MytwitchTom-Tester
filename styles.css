@@ -800,6 +800,37 @@ html.tbc-peek [role="dialog"][aria-labelledby="channel-points-reward-center-head
   color: #efeff1;
 }
 
+/* X on the "Save your Streak" row (streaksaver.js). */
+a[class*="saveYourStreakSideNavRow"] {
+  position: relative;
+}
+a[class*="saveYourStreakSideNavRow"][data-tbc-dismissed] {
+  display: none;
+}
+.tbc-ssx {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: #adadb8;
+  font: 16px/22px Inter, Roobert, "Helvetica Neue", Arial, sans-serif;
+  text-align: center;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+.tbc-ssx:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #efeff1;
+}
+.side-nav--collapsed .tbc-ssx {
+  display: none;
+}
+
 /* Pop-up when the saver gave up waiting for Twitch. */
 .tbc-gaveup {
   position: fixed;
@@ -1568,6 +1599,99 @@ html.tbc-peek [role="dialog"][aria-labelledby="channel-points-reward-center-head
   background: rgba(83, 83, 95, 0.48);
 }
 
+/* ===== Flagging chat lines (flag.js) ===== */
+.chat-line__message:hover {
+  position: relative;
+}
+/* Sits in a strip left of each line, widened from Twitch's 16px so the button
+   never covers the words. */
+.tbc-flagging .chat-line__message {
+  padding-left: 26px !important;
+}
+.tbc-flagbtn {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  z-index: 2;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #2f2f35;
+  color: #ffb31a; /* flag.js sets your chat colour once it knows it */
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+.chat-line__message:hover .tbc-flagbtn {
+  display: flex;
+}
+.tbc-flagbtn:hover {
+  background: #53535f;
+}
+.tbc-flagged {
+  position: relative;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 2px var(--tbc-flag), 0 0 12px var(--tbc-flag);
+}
+/* While a line glows, the flagger's picture takes the flag button's place. */
+.chat-line__message.tbc-flagged .tbc-flagbtn {
+  display: none;
+}
+.tbc-flagpic {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  z-index: 2;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.chat-line__message.tbc-flagged:hover .tbc-flagpic {
+  display: none;
+}
+.tbc-flagx {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  z-index: 3;
+  display: none;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #2f2f35;
+  color: #efeff1;
+  font: 16px/24px Inter, Roobert, "Helvetica Neue", Arial, sans-serif;
+  text-align: center;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+.chat-line__message.tbc-flagged:hover .tbc-flagx {
+  display: block;
+}
+.tbc-flagx:hover {
+  background: #53535f;
+}
+.tbc-flagtoast {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 10000;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #18181b;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+  color: #efeff1;
+  font: 600 13px/1.4 Inter, Roobert, "Helvetica Neue", Arial, sans-serif;
+}
+
 /* Channel column down the right of the emote picker (freqchannels.js), in
    place of the one Twitch's newer picker dropped. */
 .tbc-chnav-host {
@@ -1618,4 +1742,30 @@ html.tbc-peek [role="dialog"][aria-labelledby="channel-points-reward-center-head
 /* The streak flame steps aside while Twitch's own streak popup shows (streak.js). */
 .tbc-streak.tbc-streak--away {
   display: none;
+}
+
+/* Clear all, in the header of Twitch's notifications panel (clearnotifs.js). */
+.tbc-clearnotifs {
+  padding: 3px 8px;
+  border: 1px solid #53535f;
+  border-radius: 999px;
+  background: none;
+  color: #adadb8;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.tbc-clearnotifs:hover {
+  border-color: #adadb8;
+  color: #efeff1;
+}
+.tbc-clearnotifs--sure {
+  border-color: #eb0400;
+  color: #ff8280;
+}
+.tbc-clearnotifs:disabled {
+  opacity: 0.7;
+  cursor: default;
 }

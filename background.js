@@ -22,6 +22,15 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
     return true; // reply comes later
   }
 
+  // You X'd the row of the channel it's working on (streaksaver.js).
+  if (msg.type === "stopStreakSaver") {
+    chrome.storage.local.get("streakSaverTab", (d) => {
+      if (!d.streakSaverTab) return;
+      chrome.storage.local.remove("streakSaverTab");
+      chrome.tabs.remove(d.streakSaverTab).catch(() => {});
+    });
+  }
+
   if (msg.type === "streakSaverDone" && sender.tab) {
     chrome.storage.local.remove("streakSaverTab");
     chrome.windows.remove(sender.tab.windowId);
@@ -35,6 +44,82 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
       .open({ tabId: sender.tab.id })
       .catch(() => chrome.windows.create({ url: "hub.html", type: "popup", width: 400, height: 680 }));
   }
+});
+
+// ===== The relay, for flagging chat lines (flag.js) ===================================
+// Twitch pages connect here with a port; while any is open this keeps one
+// connection to Streamer Buddy System's relay, signed in with the sign-in the
+// hub handed over (hub-panel.js), and passes messages both ways.
+//
+// Saved in chrome.storage.local:
+//   "hubToken"  the hub's Twitch sign-in
+
+const RELAY_URL = "wss://streamer-buddy-relay.handsome-tom.workers.dev/ws";
+const hubPorts = new Set();
+let hubSocket = null;
+let hubPing = 0;
+let hubReady = false;
+const hubWaiting = []; // flags from before the connection was ready
+
+async function hubConnect() {
+  if (hubSocket || !hubPorts.size) return;
+  const { hubToken } = await chrome.storage.local.get("hubToken");
+  if (!hubToken || hubSocket) return;
+  const ws = new WebSocket(RELAY_URL);
+  hubSocket = ws;
+  ws.onopen = () => ws.send(JSON.stringify({ t: "auth", token: hubToken }));
+  ws.onmessage = (e) => {
+    if (e.data === "pong") return;
+    const m = JSON.parse(e.data);
+    if (m.t === "state" && !hubReady) {
+      hubReady = true;
+      for (const flag of hubWaiting.splice(0)) ws.send(JSON.stringify(flag));
+    }
+    if (m.t === "flash" || m.t === "unflash" || m.t === "flashed" || m.t === "error") {
+      for (const port of hubPorts) port.postMessage(m);
+    }
+  };
+  ws.onclose = (e) => {
+    if (ws !== hubSocket) return;
+    hubSocket = null;
+    hubReady = false;
+    clearInterval(hubPing);
+    if (e.code === 4001) chrome.storage.local.remove("hubToken"); // the sign-in ran out
+    else if (hubPorts.size) setTimeout(hubConnect, 5000);
+  };
+  clearInterval(hubPing);
+  hubPing = setInterval(() => ws.readyState === 1 && ws.send("ping"), 20000); // also keeps this worker awake
+}
+
+chrome.runtime.onConnect.addListener((port) => {
+  if (port.name !== "hub") return;
+  hubPorts.add(port);
+  hubConnect();
+  port.onDisconnect.addListener(() => {
+    hubPorts.delete(port);
+    if (!hubPorts.size) hubSocket?.close();
+  });
+  port.onMessage.addListener(async (m) => {
+    if (m.t === "unflag") {
+      if (hubReady) hubSocket.send(JSON.stringify({ t: "unflash", id: m.id }));
+      return;
+    }
+    if (m.t !== "flag") return;
+    const { hubToken } = await chrome.storage.local.get("hubToken");
+    if (!hubToken) return port.postMessage({ t: "needSignin" });
+    const flag = { t: "flash", kind: "chat", channel: m.channel, chatter: m.chatter, chatterName: m.chatterName, chatterColor: m.chatterColor, emotes: m.emotes, text: m.text, color: m.color };
+    if (hubReady) hubSocket.send(JSON.stringify(flag));
+    else {
+      hubWaiting.push(flag);
+      hubConnect();
+    }
+  });
+});
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== "local" || !changes.hubToken) return;
+  hubSocket?.close();
+  hubConnect();
 });
 
 // ===== Account switcher (accounts.js) ================================================

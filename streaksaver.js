@@ -10,6 +10,10 @@
 //   Streak Saver  only runs when you click "Save your Streak"
 //   Off           does nothing; the row works like normal Twitch
 //
+// The X on the row means "not this one": it hides that channel's row, stops the
+// saver if it's already running on that channel, and Auto Saver leaves it alone.
+// It comes back if the streak's length changes, or after a week.
+//
 // It counts as saved when Twitch says so ("Your … streak … is saved!"). If that
 // hasn't happened by the usual time it takes plus 20 seconds, it gives up and
 // your Twitch tab shows a pop-up saying so instead.
@@ -24,6 +28,7 @@
 //   "streakSaverState"  { running: { channel, at } | null, done: { channel: timeMs } }
 //   "streakSaverFailed" { channel, at } while the gave-up pop-up is waiting to be seen
 //   "streakSaverSaved"  { channel, text, at } while the saved pop-up is waiting to be seen
+//   "streakSaverDismissed"  { channel: { label, at } } rows you've X'd
 //
 // Wrapped so its names don't clash with the other scripts, and only started if
 // it's switched on (settings.js).
@@ -38,12 +43,14 @@ whenOn("saver", "Streak Saver", () => {
   const GIVE_UP_MS = USUAL_SAVE_MS + EXTRA_MS; // no "saved" by then: give up and say so
   const REDO_AFTER_MS = 6 * 60 * 60 * 1000; // don't auto-save the same channel again for this long
   const STALE_MS = 35 * 60 * 1000;         // a "running" note older than this is ignored
+  const DISMISS_MS = 7 * 24 * 60 * 60 * 1000; // an X'd row stays hidden this long at most
   const SAVED_RE = /streak[^.!\n]{0,40}\bsaved\b|\bsaved\b[^.!\n]{0,40}streak/i;
   const CHAT = '.video-chat, [class*="chat-scrollable-area"], [class*="chat-room"], .tbc-saver';
 
   let mode = "auto"; // "auto" | "manual" | "off"
   const MODES = [["auto", "Auto Saver"], ["manual", "Streak Saver"], ["off", "Off"]];
   let isSaver = false; // set once background.js says this tab is the saver window
+  let dismissed = {};  // rows you've X'd
 
   function alive() {
     try {
@@ -54,9 +61,10 @@ whenOn("saver", "Streak Saver", () => {
   }
 
   const getState = (cb) =>
-    chrome.storage.local.get(["streakSaverMode", "streakSaverAuto", "streakSaverState"], (d) => {
+    chrome.storage.local.get(["streakSaverMode", "streakSaverAuto", "streakSaverState", "streakSaverDismissed"], (d) => {
       // Earlier versions had a single on/off pill ("streakSaverAuto").
       mode = d.streakSaverMode || (d.streakSaverAuto === false ? "manual" : "auto");
+      dismissed = d.streakSaverDismissed || {};
       cb(d.streakSaverState || { running: null, done: {} });
     });
   const setState = (s) => alive() && chrome.storage.local.set({ streakSaverState: s });
@@ -66,6 +74,12 @@ whenOn("saver", "Streak Saver", () => {
     const label = a.getAttribute("aria-label") || "";
     const channel = (label.match(/\bon (\S+)\s*$/) || [])[1]?.toLowerCase() || a.getAttribute("href");
     return { channel, url: new URL(a.getAttribute("href"), location.origin).href };
+  }
+
+  // The label has the streak's length in it, so a longer streak counts as a new row.
+  function isDismissed(a) {
+    const d = dismissed[rowInfo(a).channel];
+    return !!d && d.label === a.getAttribute("aria-label") && Date.now() - d.at < DISMISS_MS;
   }
 
   function start(info) {
@@ -82,12 +96,13 @@ whenOn("saver", "Streak Saver", () => {
   let ready = false; // true once we know whether this tab is the saver window
   function maybeAutoSave() {
     if (!ready || isSaver || checking || !alive()) return;
-    const a = document.querySelector(ROW);
-    if (!a) return;
+    if (!document.querySelector(ROW)) return;
     checking = true;
     getState((s) => {
       checking = false;
       if (mode !== "auto") return;
+      const a = [...document.querySelectorAll(ROW)].find((r) => !isDismissed(r));
+      if (!a) return;
       const info = rowInfo(a);
       if (s.running && Date.now() - s.running.at < STALE_MS) return; // one at a time
       if (s.done?.[info.channel] && Date.now() - s.done[info.channel] < REDO_AFTER_MS) return;
@@ -142,11 +157,50 @@ whenOn("saver", "Streak Saver", () => {
     }
   }
 
+  // Each row gets an X, and X'd rows are hidden. Twitch redraws the sidebar now and
+  // then, so this runs again whenever it does.
+  function renderRows() {
+    if (!ready || isSaver) return;
+    for (const a of document.querySelectorAll(ROW)) {
+      a.toggleAttribute("data-tbc-dismissed", isDismissed(a));
+      if (a.querySelector(".tbc-ssx")) continue;
+      const x = document.createElement("button");
+      x.type = "button";
+      x.className = "tbc-ssx";
+      x.textContent = "\u00d7";
+      x.title = "Don't save this streak";
+      x.setAttribute("aria-label", "Don't save this streak");
+      a.append(x);
+    }
+  }
+
+  function dismiss(a) {
+    const info = rowInfo(a);
+    a.toggleAttribute("data-tbc-dismissed", true);
+    getState((s) => {
+      const keep = Object.entries(dismissed).filter(([, d]) => Date.now() - d.at < DISMISS_MS);
+      dismissed = { ...Object.fromEntries(keep), [info.channel]: { label: a.getAttribute("aria-label"), at: Date.now() } };
+      if (alive()) chrome.storage.local.set({ streakSaverDismissed: dismissed });
+      if (s.running?.channel === info.channel) {
+        s.running = null;
+        setState(s);
+        chrome.runtime.sendMessage({ type: "stopStreakSaver" });
+      }
+    });
+  }
+
   // Clicking "Save your Streak" runs the saver instead of switching this tab to the
   // VOD (unless the saver is Off, when it's left to Twitch).
   document.addEventListener("click", (e) => {
     const a = e.target.closest?.(ROW);
-    if (!a || isSaver || mode === "off") return;
+    if (!a || isSaver) return;
+    if (e.target.closest(".tbc-ssx")) {
+      e.preventDefault();
+      e.stopPropagation();
+      dismiss(a);
+      return;
+    }
+    if (mode === "off") return;
     e.preventDefault();
     e.stopPropagation();
     start(rowInfo(a));
@@ -157,6 +211,10 @@ whenOn("saver", "Streak Saver", () => {
     if (changes.streakSaverMode) {
       mode = changes.streakSaverMode.newValue || "auto";
       renderPill();
+    }
+    if (changes.streakSaverDismissed) {
+      dismissed = changes.streakSaverDismissed.newValue || {};
+      renderRows();
     }
     for (const key of ["streakSaverFailed", "streakSaverSaved"]) {
       if (!changes[key] || isSaver) continue;
@@ -300,6 +358,7 @@ whenOn("saver", "Streak Saver", () => {
         return;
       }
       renderPill();
+      renderRows();
       maybeAutoSave();
       // A pop-up nobody has dismissed yet (e.g. this tab was reloaded).
       chrome.storage.local.get(["streakSaverFailed", "streakSaverSaved"], (d) => {
@@ -318,6 +377,7 @@ whenOn("saver", "Streak Saver", () => {
     pending = setTimeout(() => {
       pending = 0;
       renderPill();
+      renderRows();
       maybeAutoSave();
     }, 500);
   });
