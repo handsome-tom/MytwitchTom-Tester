@@ -6,16 +6,16 @@ A Chrome extension of small upgrades for watching Twitch: player controls, emote
 
 ## Install in Brave or Chrome (about 1 minute)
 
-1. Download **[TwitchSpace-2.5.zip](../../releases/latest/download/TwitchSpace-2.5.zip)**.
+1. Download **[TwitchSpace-2.4.3.zip](../../releases/latest/download/TwitchSpace-2.4.3.zip)**.
 2. Unzip it. You get a folder called `Twitch Space`. Put it somewhere it can stay, like Documents; your browser loads the extension from that folder every time.
 3. Go to `brave://extensions` in Brave, or `chrome://extensions` in Chrome.
 4. Turn on **Developer mode** (switch in the top-right corner).
 5. Click **Load unpacked** and choose the `Twitch Space` folder.
 6. Open or refresh any twitch.tv tab.
 
-**Updating from 2.3?** Replace everything inside your existing `Twitch Space` folder with the new files, then click the reload arrow on the Twitch Space card at `brave://extensions` (or `chrome://extensions`). That keeps your saved phrases, notes, pins and markers. **Still on MytwitchTom?** Remove its card, delete the old folder, then do the steps above.
+**Updating from an older version?** Replace everything inside your existing `Twitch Space` folder with the new files, then click the reload arrow on the Twitch Space card at `brave://extensions` (or `chrome://extensions`). That keeps your saved phrases, notes, pins and markers. **Still on MytwitchTom?** Remove its card, delete the old folder, then do the steps above.
 
-The [release](../../releases/latest) also has **TwitchSpace-2.5-Guide.pdf**, which shows what every feature does.
+The [release](../../releases/latest) also has **TwitchSpace-2.4.3-Guide.pdf**, which shows what every feature does.
 
 ## Features
 
@@ -30,7 +30,7 @@ The [release](../../releases/latest) also has **TwitchSpace-2.5-Guide.pdf**, whi
 
 Click the Twitch Space icon in the browser toolbar for a switch for each of the bigger features, so you can turn off what you don't use (refresh Twitch to apply).
 
-Everything is stored in your own Chrome; nothing is sent anywhere except Twitch.
+Everything is stored in your own Chrome; nothing is sent anywhere except Twitch. Your saved things survive removing and reinstalling the extension (a copy lives in the Twitch page), and the pop-up's **Back up** and **Restore** carry them to another browser or computer.
 
 ## Reporting bugs
 

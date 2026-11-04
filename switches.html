@@ -90,12 +90,49 @@
   footer button:hover {
     background: #772ce8;
   }
+  .keep {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px 0;
+    color: #adadb8;
+    font-size: 12px;
+  }
+  .keep button {
+    padding: 3px 10px;
+    border: 1px solid #53535f;
+    border-radius: 4px;
+    background: transparent;
+    color: #efeff1;
+    font: inherit;
+    cursor: pointer;
+  }
+  .keep button:hover {
+    background: rgba(83, 83, 95, 0.3);
+  }
+  .keep span {
+    flex: 1;
+  }
+  #keepnote {
+    margin: 2px 0 0;
+    padding: 0 14px;
+    color: #adadb8;
+    font-size: 11px;
+  }
 </style>
 </head>
 <body>
   <header><img class="logo" src="icons/lockup-white.svg" alt="Twitch Space"></header>
   <div id="list"></div>
   <footer><span id="note">Changes apply when you refresh Twitch.</span></footer>
+  <div class="keep">
+    <span>Your saved things</span>
+    <button type="button" id="backup">Back up</button>
+    <button type="button" id="restore">Restore</button>
+    <input type="file" id="restorefile" accept=".json,application/json" hidden>
+  </div>
+  <p id="keepnote">Phrases, notes, pins, markers and more, to a file.</p>
+  <script src="backup.js"></script>
   <script src="switches.js"></script>
 </body>
 </html>

@@ -2,6 +2,8 @@
 // bigger features. The list comes from settings.js, which saves the features
 // this copy has ("featureList") whenever a Twitch page loads; what's switched
 // off is saved as "featuresOff" and takes effect when Twitch is refreshed.
+// Underneath: Back up and Restore, which save everything you've saved to a file
+// and read it back (backup.js), for moving to another browser or computer.
 const list = document.getElementById("list");
 const footer = document.querySelector("footer");
 const note = document.getElementById("note");
@@ -50,3 +52,34 @@ function offerRefresh() {
   });
   footer.append(go);
 }
+
+// ===== Back up and Restore ======================================================
+const things = (n) => `${n} thing${n === 1 ? "" : "s"}`;
+const keepNote = document.getElementById("keepnote");
+const restoreFile = document.getElementById("restorefile");
+
+document.getElementById("backup").addEventListener("click", async () => {
+  const data = await tbcBackupCollect();
+  const count = Object.keys(data.local).length + Object.keys(data.sync).length;
+  const blob = new Blob([JSON.stringify(data, null, 1)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `Twitch Space backup ${data.saved.slice(0, 10)}.json`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+  keepNote.textContent = `Saved ${things(count)} to ${a.download} in your downloads.`;
+});
+
+document.getElementById("restore").addEventListener("click", () => restoreFile.click());
+restoreFile.addEventListener("change", async () => {
+  const file = restoreFile.files[0];
+  restoreFile.value = "";
+  if (!file) return;
+  try {
+    const count = await tbcBackupApply(JSON.parse(await file.text()));
+    keepNote.textContent = `Restored ${things(count)}.`;
+    offerRefresh();
+  } catch (e) {
+    keepNote.textContent = `That isn't a Twitch Space backup (${e.message}).`;
+  }
+});

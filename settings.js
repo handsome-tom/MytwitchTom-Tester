@@ -9,6 +9,7 @@
 // Saved in chrome.storage.local:
 //   "featuresOff"  [key]              features switched off (everything else is on)
 //   "featureList"  [{ key, label }]   the features this copy has, for the pop-up
+//   "tbcInstalled" ms                 when this install first ran on Twitch (see the end)
 
 const tbcFeatures = []; // [{ key, label }], in the order the scripts load
 let tbcOff = null;      // keys switched off, once loaded
@@ -84,4 +85,35 @@ function tbcWatch(fn, every = 250) {
     }
   });
   tbcObserver.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
+}
+
+// ===== Keeping what you've saved across reinstalls (backup.js) ===============
+// www.twitch.tv's own localStorage holds a copy of your saved things, so they
+// outlive the extension: a fresh install (no "tbcInstalled" mark yet) takes the
+// copy back the first time Twitch loads. After that, every change is copied over
+// again a moment later. Only in the page itself, not the player or embed frames.
+if (window.top === window && location.hostname === "www.twitch.tv") {
+  let tbcMirrorDue = 0;
+  const tbcMirror = () => {
+    clearTimeout(tbcMirrorDue);
+    tbcMirrorDue = setTimeout(async () => {
+      if (!tbcAlive()) return;
+      try {
+        localStorage.setItem(TBC_BACKUP_KEY, JSON.stringify(await tbcBackupCollect()));
+      } catch {} // the site's storage is full or blocked; the pop-up's Back up still works
+    }, 5000);
+  };
+  chrome.storage.local.get("tbcInstalled", async (d) => {
+    if (!d.tbcInstalled) {
+      try {
+        const copy = JSON.parse(localStorage.getItem(TBC_BACKUP_KEY) || "null");
+        if (copy) await tbcBackupApply(copy);
+      } catch {}
+      if (tbcAlive()) chrome.storage.local.set({ tbcInstalled: Date.now() });
+    }
+    tbcMirror();
+    chrome.storage.onChanged.addListener((changes) => {
+      if (Object.keys(changes).some((k) => !tbcBackupSkips(k))) tbcMirror();
+    });
+  });
 }
