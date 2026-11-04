@@ -188,21 +188,10 @@ whenOn("split", "Split screen", () => {
     if (e.key === "Escape" && split && !e.target.closest?.("input, textarea, [contenteditable='true']")) closeSplit();
   });
 
-  let pending = 0;
-  const observer = new MutationObserver(() => {
-    try {
-      if (!chrome.runtime?.id) return observer.disconnect();
-    } catch {
-      return observer.disconnect();
-    }
-    if (pending) return;
-    pending = setTimeout(() => {
-      pending = 0;
-      // Leaving the page (Twitch changes pages without reloading) ends the split.
-      if (split && location.pathname !== split.path) closeSplit();
-      addPill();
-      place();
-    }, 150);
-  });
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  tbcWatch(() => {
+    // Leaving the page (Twitch changes pages without reloading) ends the split.
+    if (split && location.pathname !== split.path) closeSplit();
+    addPill();
+    place();
+  }, 150);
 });

@@ -307,16 +307,25 @@ whenOn("streak", "Watch streak flame", () => {
   // Streak" too, so only these areas count.)
   const POPUP_AREAS = ".chat-shell, .chat-room, .channel-root__right-column, .channel-root__player, .video-player";
 
+  // Parts of those areas that never hold the popup, and are big (the chat
+  // messages): skipped whole, so this stays cheap however long chat gets.
+  const NOT_POPUP = `${PANEL}, ${REWARDS}, .tbc-streak, .tbc-streak-tip, .chat-scrollable-area__message-container, ` +
+    '[data-a-target="chat-scroller"], .video-chat__message-list-wrapper, .tbc-saver, script, style';
+
   function findTwitchPopup() {
     if (document.documentElement.classList.contains("tbc-peek")) return false;
-    const found = document.evaluate(
-      "//*[not(self::script or self::style)]/text()[contains(translate(., 'STREAK', 'streak'), 'streak')]",
-      document.body, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-    for (let i = 0; i < found.snapshotLength; i++) {
-      const el = found.snapshotItem(i).parentElement;
-      if (!el || !/watch streak|stream streak|consecutive streams/i.test(el.textContent)) continue;
-      if (el.closest(`${PANEL}, ${REWARDS}, .tbc-streak, .tbc-streak-tip, .chat-scrollable-area__message-container, [data-a-target="chat-scroller"], .video-chat__message-list-wrapper, .tbc-saver`)) continue;
-      if (el.closest(POPUP_AREAS) && el.getBoundingClientRect().height > 0) return true;
+    const areas = [...document.querySelectorAll(POPUP_AREAS)];
+    for (const area of areas) {
+      if (areas.some((a) => a !== area && a.contains(area))) continue; // inside another area: looked at there
+      const walker = document.createTreeWalker(area, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
+        acceptNode: (n) => n.nodeType === Node.ELEMENT_NODE
+          ? (n.matches(NOT_POPUP) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_SKIP)
+          : (/streak/i.test(n.data) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP),
+      });
+      for (let t = walker.nextNode(); t; t = walker.nextNode()) {
+        const el = t.parentElement;
+        if (el && /watch streak|stream streak|consecutive streams/i.test(el.textContent) && el.getBoundingClientRect().height > 0) return true;
+      }
     }
     return false;
   }
@@ -386,7 +395,7 @@ whenOn("streak", "Watch streak flame", () => {
     if (el.textContent !== text) el.textContent = text;
   }
 
-  const observer = new MutationObserver(() => {
+  tbcWatch(() => {
     if (!alive()) return shutDown();
     const channel = channelName();
     if (!channel) return;
@@ -398,12 +407,10 @@ whenOn("streak", "Watch streak flame", () => {
     lookForTwitchPopup();
     if (!document.querySelector(".tbc-streak")) render();
     if (!peeked.has(channel) && document.querySelector(BALANCES)) peek();
-  });
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  }, 500);
 
   function shutDown() {
     clearInterval(timer);
-    observer.disconnect();
   }
 
   // Clicking the flame opens Twitch's rewards panel and scrolls to the streak line.

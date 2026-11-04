@@ -21,14 +21,6 @@ whenOn("claim", "Auto-claim bonus points", () => {
     button.click();
   }
 
-  const observer = new MutationObserver(() => {
-    try {
-      if (!chrome.runtime?.id) return observer.disconnect();
-    } catch {
-      return observer.disconnect();
-    }
-    claim();
-  });
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  tbcWatch(claim, 500);
   claim();
 });

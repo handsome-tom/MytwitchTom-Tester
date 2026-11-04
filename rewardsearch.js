@@ -209,14 +209,9 @@ whenOn("rewards", "Channel points reward search", () => {
   }
 
   let wasOpen = false;
-  const observer = new MutationObserver((mutations) => {
+  tbcWatch((mutations) => {
     // Ignore changes inside the search box itself (its count updating).
-    if (mutations.every((m) => m.target.closest?.(".tbc-rsearch, .tbc-rstar") || m.target.parentElement?.closest(".tbc-rsearch, .tbc-rstar"))) return;
-    try {
-      if (!chrome.runtime?.id) return observer.disconnect();
-    } catch {
-      return observer.disconnect();
-    }
+    if (mutations && mutations.every((m) => m.target.closest?.(".tbc-rsearch, .tbc-rstar") || m.target.parentElement?.closest(".tbc-rsearch, .tbc-rstar"))) return;
     const list = document.querySelector(LIST);
     if (!list) {
       // Panel closed: start fresh next time.
@@ -230,6 +225,5 @@ whenOn("rewards", "Channel points reward search", () => {
     addBox(list);
     applyStars(list);
     if (query) filter();
-  });
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  }, 250);
 });

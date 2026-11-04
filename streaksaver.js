@@ -370,16 +370,10 @@ whenOn("saver", "Streak Saver", () => {
   });
 
   // Twitch builds the sidebar after the page loads and redraws it now and then.
-  let pending = 0;
-  const observer = new MutationObserver(() => {
-    if (!alive()) return observer.disconnect();
-    if (isSaver || pending) return;
-    pending = setTimeout(() => {
-      pending = 0;
-      renderPill();
-      renderRows();
-      maybeAutoSave();
-    }, 500);
-  });
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  tbcWatch(() => {
+    if (!alive() || isSaver) return;
+    renderPill();
+    renderRows();
+    maybeAutoSave();
+  }, 500);
 });

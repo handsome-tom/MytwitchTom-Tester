@@ -372,21 +372,15 @@ whenOn("phrases", "Quick phrases and highlight words", () => {
   window.addEventListener("resize", place);
 
   // Twitch redraws the chat box now and then; put the button back when it does.
-  let pending = 0;
-  const observer = new MutationObserver(() => {
-    if (!alive()) return observer.disconnect();
-    if (pending) return;
-    pending = setTimeout(() => {
-      pending = 0;
-      addButton();
-      if (pickerOpen()) learnImages();
-      if (panel) {
-        // If Twitch's picker was closed some other way, stop picking.
-        if (picking && !pickerOpen()) stopPicking();
-        place();
-      }
-    }, 300);
-  });
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  tbcWatch(() => {
+    if (!alive()) return;
+    addButton();
+    if (pickerOpen()) learnImages();
+    if (panel) {
+      // If Twitch's picker was closed some other way, stop picking.
+      if (picking && !pickerOpen()) stopPicking();
+      place();
+    }
+  }, 300);
   addButton();
 });

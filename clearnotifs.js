@@ -97,14 +97,5 @@ whenOn("clearnotifs", "Clear all notifications", () => {
   }
 
   // The panel is only there while the bell is open.
-  let pending = 0;
-  const observer = new MutationObserver(() => {
-    if (!chrome.runtime?.id) return observer.disconnect();
-    if (pending) return;
-    pending = setTimeout(() => {
-      pending = 0;
-      addButton();
-    }, 300);
-  });
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  tbcWatch(addButton, 300);
 });

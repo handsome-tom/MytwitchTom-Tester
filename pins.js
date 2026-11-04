@@ -148,9 +148,9 @@ function render() {
   fill(row);
 }
 
-new MutationObserver(() => {
+tbcWatch(() => {
   if (document.querySelector(PICKER)) render();
-}).observe(document.documentElement, { childList: true, subtree: true });
+}, 200);
 
 document.addEventListener("click", (e) => {
   const pin = e.target.closest("[data-tbc-pin]");

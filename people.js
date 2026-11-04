@@ -222,11 +222,7 @@ whenOn("people", "Chatter notes (right-click a name)", () => {
     document.querySelectorAll(USERNAME).forEach(decorate);
   }
 
-  const observer = new MutationObserver(() => {
-    if (!alive()) return observer.disconnect();
-    decorateAll();
-  });
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  tbcWatch(decorateAll, 300);
 
   // ===== The flyout ================================================================
 

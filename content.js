@@ -46,12 +46,7 @@ function scan() {
   document.querySelectorAll(".video-player__overlay").forEach(addPauseZone);
 }
 
-new MutationObserver(scan).observe(document.documentElement, {
-  childList: true,
-  subtree: true,
-  attributes: true,
-  attributeFilter: ["class"],
-});
+tbcWatch(scan, 300);
 scan();
 
 // --- Proximity scaling -------------------------------------------------------
@@ -64,10 +59,14 @@ let frame = 0;
 
 function update() {
   frame = 0;
-  document.querySelectorAll(GROUP).forEach((g) => {
+  const groups = [...document.querySelectorAll(GROUP)];
+  if (!groups.length) return;
+  // Measure everything first, then write, so the browser lays out once, not per group.
+  const rects = mouse ? groups.map((g) => g.getBoundingClientRect()) : [];
+  groups.forEach((g, i) => {
     let z = 1;
     if (mouse) {
-      const r = g.getBoundingClientRect();
+      const r = rects[i];
       if (r.width) {
         const dx = Math.max(r.left - mouse.x, 0, mouse.x - r.right);
         const dy = Math.max(r.top - mouse.y, 0, mouse.y - r.bottom);

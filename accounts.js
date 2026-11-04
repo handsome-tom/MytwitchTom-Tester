@@ -127,14 +127,7 @@ whenOn("accounts", "Account switcher", () => {
   }
 
   // Twitch builds the menu when you open it; add the button each time.
-  let pending = 0;
-  const observer = new MutationObserver(() => {
-    if (!alive()) return observer.disconnect();
-    if (pending) return;
-    pending = setTimeout(() => {
-      pending = 0;
-      addButton();
-    }, 200);
-  });
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  tbcWatch(() => {
+    if (alive()) addButton();
+  }, 200);
 });

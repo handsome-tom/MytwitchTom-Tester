@@ -457,14 +457,7 @@ whenOn("emotes", "Pinned emotes and Frequent Channels", () => {
 
   // Chat changes the page constantly, so re-check at most every 150ms (waiting for
   // a quiet moment could mean never re-checking while chat is busy).
-  let pending = 0;
-  const observer = new MutationObserver(() => {
-    if (!alive()) return observer.disconnect();
-    if (!document.querySelector(PICKER) || pending) return;
-    pending = setTimeout(() => {
-      pending = 0;
-      render();
-    }, 150);
-  });
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  tbcWatch(() => {
+    if (alive() && document.querySelector(PICKER)) render();
+  }, 150);
 });

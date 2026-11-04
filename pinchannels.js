@@ -269,17 +269,11 @@ whenOn("pinchannels", "Pinned channels", () => {
 
   // Twitch builds the sidebar and the channel header after the page loads,
   // and changes pages without reloading.
-  let pending = 0;
-  const observer = new MutationObserver(() => {
-    if (!alive()) return observer.disconnect();
-    if (pending) return;
-    pending = setTimeout(() => {
-      pending = 0;
-      const box = document.querySelector(".tbc-pinned");
-      const followed = document.querySelector(FOLLOWED);
-      if (pins.length && (!box || box.nextElementSibling !== followed)) render();
-      else renderButton();
-    }, 300);
-  });
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  tbcWatch(() => {
+    if (!alive()) return;
+    const box = document.querySelector(".tbc-pinned");
+    const followed = document.querySelector(FOLLOWED);
+    if (pins.length && (!box || box.nextElementSibling !== followed)) render();
+    else renderButton();
+  }, 300);
 });

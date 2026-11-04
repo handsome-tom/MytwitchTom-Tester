@@ -144,13 +144,7 @@
   }
 
   // Twitch redraws its controls; put the playhead back when it does.
-  const observer = new MutationObserver(() => {
-    try {
-      if (!chrome.runtime?.id) return observer.disconnect();
-    } catch {
-      return observer.disconnect();
-    }
+  tbcWatch(() => {
     if (!knob || !knob.isConnected) schedule();
-  });
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  }, 250);
 })();

@@ -18,7 +18,8 @@
 //   Click or right-click a mark -> edit its note or remove it
 // Live marks are "time since the stream started", saved against the broadcast's
 // start time. When you later open that broadcast's VOD, they're copied onto it
-// automatically: VOD time = stream time.
+// automatically: VOD time = stream time. Twitch is asked when the VOD's broadcast
+// started and whose it was, so this works however you got to the VOD.
 //
 // Saved in chrome.storage.local:
 //   "marks:<vodId>"            { marks: [{ id, t, note }], removed: [ids] }
@@ -33,6 +34,7 @@ whenOn("vodmarks", "Bookmarks and VOD markers", () => {
   const DRAG_PX = 3;               // movement before a press counts as a drag
   const LIVE_DELAY_S = 10;         // live video plays a few seconds behind; mark a bit earlier
   const SAME_STREAM_MS = 2 * 60 * 1000; // live start vs VOD start must be this close
+  const START_RECHECK_MS = 60 * 1000;   // how often to ask Twitch when a stream started
   const BOOKMARK_PATH = "M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Zm1 2v12.55l5-2.86 5 2.86V5H7Z";
 
   let videoId = null;
@@ -73,9 +75,25 @@ whenOn("vodmarks", "Bookmarks and VOD markers", () => {
     return m ? m[1] : null;
   }
 
-  // When the VOD's broadcast started, and whose it is, from the page's metadata.
-  // Twitch only fills these in on a full page load, so check they're for this video.
-  function vodInfo(id) {
+  // When the VOD's broadcast started, and whose it is, asked of Twitch. A live
+  // stream's start and its VOD's are a few seconds apart.
+  async function vodInfo(id) {
+    try {
+      const r = await fetch("https://gql.twitch.tv/gql", {
+        method: "POST",
+        headers: { "Client-Id": "kimne78kx3ncx6brgo4mv6wki5h1ko" },
+        body: JSON.stringify({ query: "query($id:ID){ video(id:$id){ createdAt recordedAt owner{ login } } }", variables: { id } }),
+      });
+      const v = (await r.json()).data?.video;
+      const start = Date.parse(v?.recordedAt || v?.createdAt || "");
+      if (start) return { start, channel: v.owner?.login?.toLowerCase() || null };
+    } catch {}
+    return vodInfoFromPage(id);
+  }
+
+  // The same from the page's metadata, if Twitch can't be asked. It only fills
+  // these in on a full page load, so check they're for this video.
+  function vodInfoFromPage(id) {
     const url = document.querySelector('meta[property="og:url"]')?.content || "";
     if (!url.includes(`/videos/${id}`)) return null;
     const date = document.querySelector('meta[property="og:video:release_date"]')?.content;
@@ -99,23 +117,24 @@ whenOn("vodmarks", "Bookmarks and VOD markers", () => {
       // Older versions saved a plain list of seconds.
       if (Array.isArray(saved)) vod.marks = saved.map((t) => ({ id: newId(), t, note: "" }));
       else if (saved) vod = { marks: saved.marks || [], removed: saved.removed || [] };
-      const added = importLive(data, id);
-      if (added || Array.isArray(saved)) saveVod();
+      if (Array.isArray(saved)) saveVod();
       render();
+      vodInfo(id).then((info) => {
+        if (id !== videoId || !info || !alive()) return;
+        if (importLive(data, info)) {
+          saveVod();
+          render();
+        }
+      });
     });
   }
 
   // Copy marks made while this broadcast was live onto the VOD (once each).
-  function importLive(data, id) {
-    const info = vodInfo(id);
-    if (!info) return 0;
-    const streams = Object.entries(data)
+  function importLive(data, info) {
+    const match = Object.entries(data)
       .filter(([k, v]) => k.startsWith("live:") && Math.abs(v.start - info.start) < SAME_STREAM_MS)
-      .map(([, v]) => v);
-    // Two marked channels starting within 2 minutes is unlikely; if it happens, use the name.
-    const match = streams.length > 1 && info.channel
-      ? streams.filter((s) => s.channel === info.channel)
-      : streams;
+      .map(([, v]) => v)
+      .filter((s) => !info.channel || !s.channel || s.channel === info.channel); // not another channel that started then
     let added = 0;
     for (const s of match) {
       for (const m of s.marks) {
@@ -291,8 +310,23 @@ whenOn("vodmarks", "Bookmarks and VOD markers", () => {
     mark.classList.add("tbc-mark--dragging");
   }, true);
 
+  // A drag whose release we never saw (let go outside the window, or the page lost
+  // the mouse) must end, or every click on the page would stay swallowed below. The
+  // marker goes back where it was.
+  function cancelDrag() {
+    if (!drag) return;
+    const { el } = drag;
+    drag = null;
+    el.classList.remove("tbc-mark--dragging");
+    if (el.parentElement) el.parentElement.dataset.key = "";
+    render();
+  }
+  window.addEventListener("pointercancel", cancelDrag, true);
+  window.addEventListener("blur", cancelDrag);
+
   window.addEventListener("pointermove", (e) => {
     if (!drag) return;
+    if (e.buttons === 0 || !drag.el.isConnected) return cancelDrag();
     e.stopPropagation();
     if (!drag.moved && Math.abs(e.clientX - drag.startX) < DRAG_PX) return;
     drag.moved = true;
@@ -342,18 +376,19 @@ whenOn("vodmarks", "Bookmarks and VOD markers", () => {
   // That counter isn't on screen in theatre mode, fullscreen or narrow windows,
   // so fall back to the start time Twitch gives for the channel's stream.
   const starts = {}; // channel -> stream start (ms), or null while asking
+  const startAsked = {}; // channel -> when we last asked (a stream can end or restart)
   function uptime() {
     const el = document.querySelector(".live-time");
     const m = el && el.textContent.match(/(\d+):(\d\d):(\d\d)/);
     if (m) return +m[1] * 3600 + +m[2] * 60 + +m[3];
     const channel = channelName();
     if (!channel) return null;
-    if (!(channel in starts)) loadStart(channel);
+    if (Date.now() - (startAsked[channel] || 0) > START_RECHECK_MS) loadStart(channel);
     return starts[channel] ? Math.floor((Date.now() - starts[channel]) / 1000) : null;
   }
 
   function loadStart(channel) {
-    starts[channel] = null;
+    startAsked[channel] = Date.now();
     fetch("https://gql.twitch.tv/gql", {
       method: "POST",
       headers: { "Client-Id": "kimne78kx3ncx6brgo4mv6wki5h1ko" },
@@ -363,20 +398,32 @@ whenOn("vodmarks", "Bookmarks and VOD markers", () => {
       .then((j) => {
         const at = Date.parse(j.data?.user?.stream?.createdAt || "");
         if (at) starts[channel] = at;
-        else delete starts[channel]; // not live (yet); ask again later
-        renderLiveButton();
+        else delete starts[channel]; // not live (any more); ask again later
+        render();
       })
-      .catch(() => delete starts[channel]);
+      .catch(() => {});
   }
 
-  // Find (or start) the saved record for the broadcast being watched.
+  // Is what's loaded the record of the broadcast being watched?
+  function liveCurrent(channel, up) {
+    return !!live && live.channel === channel && Math.abs(live.start - (Date.now() - up * 1000)) < SAME_STREAM_MS;
+  }
+  const marksOfThisStream = () => (live && live.channel === channelName() ? live.marks : []);
+
+  // Find (or start) the saved record for the broadcast being watched. One look at a
+  // time: a second answer arriving late would replace the record, marks and all.
+  let recordWaiting = null;
   function liveRecord(cb) {
     const channel = channelName();
     const up = uptime();
     if (!channel || up == null || !alive()) return;
+    if (liveCurrent(channel, up)) return cb();
+    if (recordWaiting) return void recordWaiting.push(cb);
+    recordWaiting = [cb];
     const start = Date.now() - up * 1000;
-    if (live && live.channel === channel && Math.abs(live.start - start) < SAME_STREAM_MS) return cb();
     chrome.storage.local.get(null, (data) => {
+      const waiting = recordWaiting;
+      recordWaiting = null;
       const found = Object.entries(data).find(([k, v]) =>
         k.startsWith(`live:${channel}:`) && Math.abs(v.start - start) < SAME_STREAM_MS);
       if (found) [liveKey, live] = found;
@@ -385,7 +432,7 @@ whenOn("vodmarks", "Bookmarks and VOD markers", () => {
         live = { channel, start, marks: [] };
       }
       renderLiveButton();
-      cb();
+      waiting.forEach((w) => w());
     });
   }
 
@@ -428,7 +475,7 @@ whenOn("vodmarks", "Bookmarks and VOD markers", () => {
         b.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="${BOOKMARK_PATH}"></path></svg><span class="tbc-live-mark__count"></span>`;
         group.prepend(b);
       }
-      const n = isVod ? vod.marks.length : live && live.channel === channelName() ? live.marks.length : 0;
+      const n = isVod ? vod.marks.length : marksOfThisStream().length;
       const count = b.querySelector(".tbc-live-mark__count");
       if (count.textContent !== (n ? String(n) : "")) count.textContent = n ? String(n) : "";
       const title = isVod
@@ -483,7 +530,7 @@ whenOn("vodmarks", "Bookmarks and VOD markers", () => {
 
   function renderLiveBar() {
     const up = isLiveNow() ? uptime() : null;
-    const marks = live && live.channel === channelName() ? live.marks : [];
+    const marks = marksOfThisStream();
     document.querySelectorAll(".player-controls").forEach((controls) => {
       if (!up) {
         controls.querySelector(":scope > .tbc-livebar")?.remove();
@@ -645,9 +692,11 @@ whenOn("vodmarks", "Bookmarks and VOD markers", () => {
   }
 
   function fillList() {
+    // Twitch rebuilds its controls now and then: follow the new button.
+    if (!list.button.isConnected) list.button = document.querySelector(".tbc-live-mark") || list.button;
     const { el, button, fresh } = list;
     const isVod = !!videoId;
-    const marks = isVod ? vod.marks : live?.marks || [];
+    const marks = isVod ? vod.marks : marksOfThisStream();
     const key = (isVod ? "vod" : "live") + fresh + JSON.stringify(marks);
     if (el.dataset.key !== key) {
       el.dataset.key = key;
@@ -744,15 +793,41 @@ whenOn("vodmarks", "Bookmarks and VOD markers", () => {
 
   // ===== Keeping up with the page =====================================================
 
+  // Esc closes the note box or the list wherever the focus has wandered off to.
+  window.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    if (editor) closeEditor(false);
+    else if (list) closeList();
+  }, true);
+
+  // These sit in or out of the fullscreen player, so they'd be left behind or hidden.
+  document.addEventListener("fullscreenchange", () => {
+    closeEditor(true);
+    closeList();
+  });
+
   loadVod();
   liveRecord(() => {});
-  const observer = new MutationObserver(() => {
-    if (!alive()) return observer.disconnect();
+  let path = location.pathname;
+  function keepUp() {
+    // Moved to another page: nothing of the last one stays on screen. Saved first,
+    // while it's still the last page's marks being looked at.
+    if (location.pathname !== path) {
+      path = location.pathname;
+      cancelDrag();
+      closeEditor(true);
+      closeList();
+    }
     if (currentVideoId() !== videoId) loadVod();
     else if (!drag) render();
-    if (!live && channelName() && uptime() != null) liveRecord(() => {});
-  });
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+    const channel = channelName();
+    const up = channel ? uptime() : null;
+    if (up != null && !liveCurrent(channel, up)) liveRecord(() => {});
+  }
+  // At most every quarter second: chat changes the page constantly.
+  tbcWatch(() => {
+    if (alive()) keepUp();
+  }, 250);
   // The duration arrives after the page loads; redraw when it does.
   document.addEventListener("durationchange", () => render(), true);
   document.addEventListener("loadedmetadata", () => render(), true);

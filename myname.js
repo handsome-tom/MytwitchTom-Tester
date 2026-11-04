@@ -122,12 +122,7 @@ whenOn("myname", "Your name boxed in chat", () => {
 
   // Box new lines (and text Twitch fills into a line later) right as they're
   // added; the observer runs before the browser draws them.
-  const observer = new MutationObserver((records) => {
-    try {
-      if (!chrome.runtime?.id) return observer.disconnect();
-    } catch {
-      return observer.disconnect();
-    }
+  tbcWatch((records) => {
     readNames(); // cheap; picks up signing in or out
     if (!pattern) return;
     const lines = new Set();
@@ -141,8 +136,7 @@ whenOn("myname", "Your name boxed in chat", () => {
       }
     }
     lines.forEach(mark);
-  });
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  }, 0);
   scan();
 
   chrome.storage.local.get(["highlightWords", "myChatColor"], (d) => {
