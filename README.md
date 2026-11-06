@@ -4,7 +4,7 @@
 
 A Chrome extension of small upgrades for watching Twitch: player controls, emotes, chat, watch streaks, VOD markers and split screen.
 
-**New in 2.5.0:** Streamer Buddy System is back: a handshake button opens a side panel where mods can see what the streamer's OBS dock shows, ask her quick questions, nudge, and send her a warning when something needs her right now. See *What's new in 2.5.0.md* and the guide.
+**New in 2.5.0:** Streamer Buddy System is back: a handshake button opens a side panel where mods can see what the streamer's OBS dock shows, ask the streamer quick questions, nudge, and send a warning when something needs attention right now. See *What's new in 2.5.0.md* and the guide.
 
 ## Install in Brave or Chrome (about 1 minute)
 
