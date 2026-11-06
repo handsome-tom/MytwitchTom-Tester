@@ -10,6 +10,8 @@ More control for the streamer, and tidier lists for everyone. Nothing to set up:
 - **Back to chat in one click.** A green chat bubble at the top right closes whatever's open (Connections, a private chat, Settings) and takes you straight back to chat.
 - **Do Not Disturb.** The hand next to it: pick **For 15 minutes** or **Until I turn it off**. Meanwhile there are no sounds, no glow and no message card; everything still arrives and waits. Click the hand again to end it early. Your mods see "Do Not Disturb" in Streamer View.
 - **A gear for Settings**, instead of the sun-like icon.
+- **Mod icons in custom chat.** Before each viewer's name, like Twitch's: ban (click twice), time out for 10 minutes, and delete. Settings can hide them.
+- **Switching chats keeps everything.** Custom chat and Twitch's chat both keep running, so switching between them never loses messages.
 
 ## For mods (the side panel)
 
