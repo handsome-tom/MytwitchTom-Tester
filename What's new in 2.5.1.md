@@ -22,4 +22,6 @@ More control for the streamer, and tidier lists for everyone. Nothing to set up:
 - **Tags on the right,** with a **+** that opens a small box to add one.
 - **The box you type in stays at the bottom** of a private chat; the history above fits the space.
 
+**Try it without installing anything:** https://handsome-tom.github.io/streamer-buddy-system/demo/ shows both sides at once, with pretend people.
+
 Everything else is as in 2.5.0.
