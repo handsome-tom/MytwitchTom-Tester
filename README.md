@@ -4,11 +4,11 @@
 
 A Chrome extension of small upgrades for watching Twitch: player controls, emotes, chat, watch streaks, VOD markers and split screen.
 
-**New in 2.5.0:** Streamer Buddy System is back: a handshake button opens a side panel where mods can see what the streamer's OBS dock shows, ask the streamer quick questions, nudge, and send a warning when something needs attention right now. See *What's new in 2.5.0.md* and the guide.
+**New in 2.5.2:** a big polish pass on the streamer's custom chat and OBS dock: Twitch-style pin, reply and bookmark buttons, notices as calm cards, channel point redemptions, a viewer name card, and idle or offline mods grayed out. Streamer Buddy System (the handshake button) opens a side panel where mods can see what the streamer's dock shows, ask quick questions, nudge, and warn when something needs attention right now. See *What's new in 2.5.2.md* and the guide.
 
 ## Install in Brave or Chrome (about 1 minute)
 
-1. Download **[TwitchSpace-2.5.0.zip](../../releases/latest/download/TwitchSpace-2.5.0.zip)**.
+1. Download **[TwitchSpace-2.5.2.zip](../../releases/latest/download/TwitchSpace-2.5.2.zip)**.
 2. Unzip it. You get a folder called `Twitch Space`. Put it somewhere it can stay, like Documents; your browser loads the extension from that folder every time.
 3. Go to `brave://extensions` in Brave, or `chrome://extensions` in Chrome.
 4. Turn on **Developer mode** (switch in the top-right corner).
@@ -17,12 +17,12 @@ A Chrome extension of small upgrades for watching Twitch: player controls, emote
 
 **Updating from an older version?** Replace everything inside your existing `Twitch Space` folder with the new files, then click the reload arrow on the Twitch Space card at `brave://extensions` (or `chrome://extensions`). That keeps your saved phrases, notes, pins and markers. **Still on MytwitchTom?** Remove its card, delete the old folder, then do the steps above.
 
-The [release](../../releases/latest) also has **TwitchSpace-2.5.0-Guide.pdf**, which shows what every feature does.
+The [release](../../releases/latest) also has **TwitchSpace-2.5.2-Guide.pdf**, which shows what every feature does.
 
 ## Features
 
 - **Player:** click the video to pause/play (works through Tangia, Crowd Control and other overlays, and the bottom-left corner always pauses on live streams); a button showing the current volume that drops it to 1% when clicked; bigger slider and playhead; VOD time labels raised above markers.
-- **Emotes and chat:** quick phrases (saved messages, emotes included) with Highlight words on top; your username and highlight words boxed in your chat colour; pinned emotes and Frequent Channels in the emote picker.
+- **Emotes and chat:** quick phrases (saved messages, emotes included) with Highlight words on top; your username and highlight words boxed in your chat color; pinned emotes and Frequent Channels in the emote picker.
 - **Watch streaks:** a streak flame with a tooltip; Auto Saver / Streak Saver / Off to keep streaks alive, in a hidden, silent window, with a pop-up once it's saved.
 - **Channel points:** reward search; favorite rewards shown above the rest; the Claim Bonus button is clicked for you.
 - **People:** right-click a chatter for notes, pronouns and where you know them from; an account switcher in the avatar menu.
