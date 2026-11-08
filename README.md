@@ -1,23 +1,23 @@
-# Twitch Space
+# StreamerSpace
 
-*(Formerly MytwitchTom.)*
+*(Formerly StreamerSpace, and before that MytwitchTom.)*
 
 A Chrome extension of small upgrades for watching Twitch: player controls, emotes, chat, watch streaks, VOD markers and split screen.
 
-**New in 2.5.2:** a big polish pass on the streamer's custom chat and OBS dock: Twitch-style pin, reply and bookmark buttons, notices as calm cards, channel point redemptions, a viewer name card, and idle or offline mods grayed out. Streamer Buddy System (the handshake button) opens a side panel where mods can see what the streamer's dock shows, ask quick questions, nudge, and warn when something needs attention right now. See *What's new in 2.5.2.md* and the guide.
+**New in 2.6.0:** StreamerSpace is now StreamerSpace. Same extension, new name, and everything you've saved carries over. Streamer Buddy System sign-in now asks Twitch for your mods and the channels you mod. See *What's new in 2.6.0.md*.
 
 ## Install in Brave or Chrome (about 1 minute)
 
-1. Download **[TwitchSpace-2.5.2.zip](../../releases/latest/download/TwitchSpace-2.5.2.zip)**.
-2. Unzip it. You get a folder called `Twitch Space`. Put it somewhere it can stay, like Documents; your browser loads the extension from that folder every time.
+1. Download **[StreamerSpace-2.6.0.zip](../../releases/latest/download/StreamerSpace-2.6.0.zip)**.
+2. Unzip it. You get a folder called `StreamerSpace`. Put it somewhere it can stay, like Documents; your browser loads the extension from that folder every time.
 3. Go to `brave://extensions` in Brave, or `chrome://extensions` in Chrome.
 4. Turn on **Developer mode** (switch in the top-right corner).
-5. Click **Load unpacked** and choose the `Twitch Space` folder.
+5. Click **Load unpacked** and choose the `StreamerSpace` folder.
 6. Open or refresh any twitch.tv tab.
 
-**Updating from an older version?** Replace everything inside your existing `Twitch Space` folder with the new files, then click the reload arrow on the Twitch Space card at `brave://extensions` (or `chrome://extensions`). That keeps your saved phrases, notes, pins and markers. **Still on MytwitchTom?** Remove its card, delete the old folder, then do the steps above.
+**Updating from an older version?** Replace everything inside your existing `StreamerSpace` folder with the new files, then click the reload arrow on the StreamerSpace card at `brave://extensions` (or `chrome://extensions`). That keeps your saved phrases, notes, pins and markers. **Still on MytwitchTom?** Remove its card, delete the old folder, then do the steps above.
 
-The [release](../../releases/latest) also has **TwitchSpace-2.5.2-Guide.pdf**, which shows what every feature does.
+The [release](../../releases/latest) also has **StreamerSpace-2.6.0-Guide.pdf**, which shows what every feature does.
 
 ## Features
 
@@ -30,7 +30,7 @@ The [release](../../releases/latest) also has **TwitchSpace-2.5.2-Guide.pdf**, w
 - **Split screen:** watch two streams side by side, each with its own chat, with a sound menu to pick which one you hear.
 - **Bookmarks and VODs:** the bookmark button marks your spot and opens your marker list (× deletes); live marks sit on the live timeline and carry over to the VOD; VOD markers with notes.
 
-Click the Twitch Space icon in the browser toolbar for a switch for each of the bigger features, so you can turn off what you don't use (refresh Twitch to apply).
+Click the StreamerSpace icon in the browser toolbar for a switch for each of the bigger features, so you can turn off what you don't use (refresh Twitch to apply).
 
 Everything is stored in your own Chrome; nothing is sent anywhere except Twitch. Your saved things survive removing and reinstalling the extension (a copy lives in the Twitch page), and the pop-up's **Back up** and **Restore** carry them to another browser or computer.
 

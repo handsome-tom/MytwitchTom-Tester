@@ -1,6 +1,6 @@
 // Keeping what you've saved (backup.js).
 //
-// Twitch Space is installed from a folder ("Load unpacked"), and Chrome ties an
+// StreamerSpace is installed from a folder ("Load unpacked"), and Chrome ties an
 // extension's saved things to that one install: remove the card, or load it
 // again from a different folder, and your quick phrases, highlight words,
 // chatter notes, pinned emotes and channels, starred rewards, streaks and
@@ -8,7 +8,7 @@
 //
 //  * On every twitch.tv page, a copy of your saved things is kept in the page's
 //    own localStorage (the site's storage, which stays put whatever happens to
-//    the extension). A freshly installed Twitch Space finds that copy and takes
+//    the extension). A freshly installed StreamerSpace finds that copy and takes
 //    it back the first time Twitch loads. (settings.js runs this.)
 //  * Back up and Restore in the icon's pop-up save the same copy to a file and
 //    read it back, for moving to another browser or computer.
@@ -35,12 +35,13 @@ async function tbcBackupCollect() {
   try {
     sync = keep(await chrome.storage.sync.get(null));
   } catch {}
-  return { app: "Twitch Space", version: chrome.runtime.getManifest().version, saved: new Date().toISOString(), local, sync };
+  return { app: "StreamerSpace", version: chrome.runtime.getManifest().version, saved: new Date().toISOString(), local, sync };
 }
 
 // Puts a collected copy back. Returns how many things it restored.
 async function tbcBackupApply(data) {
-  if (!data || data.app !== "Twitch Space" || typeof data.local !== "object") throw new Error("not a Twitch Space backup");
+  // (Copies made before the rename, as Twitch Space, still come back.)
+  if (!data || !["StreamerSpace", "Twitch Space"].includes(data.app) || typeof data.local !== "object") throw new Error("not a StreamerSpace backup");
   const local = Object.fromEntries(Object.entries(data.local).filter(([k]) => !tbcBackupSkips(k)));
   const sync = Object.fromEntries(Object.entries(data.sync || {}).filter(([k]) => !tbcBackupSkips(k)));
   if (Object.keys(local).length) await chrome.storage.local.set(local);

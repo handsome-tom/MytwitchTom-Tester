@@ -64,7 +64,7 @@ document.getElementById("backup").addEventListener("click", async () => {
   const blob = new Blob([JSON.stringify(data, null, 1)], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = `Twitch Space backup ${data.saved.slice(0, 10)}.json`;
+  a.download = `StreamerSpace backup ${data.saved.slice(0, 10)}.json`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 60000);
   keepNote.textContent = `Saved ${things(count)} to ${a.download} in your downloads.`;
@@ -80,6 +80,6 @@ restoreFile.addEventListener("change", async () => {
     keepNote.textContent = `Restored ${things(count)}.`;
     offerRefresh();
   } catch (e) {
-    keepNote.textContent = `That isn't a Twitch Space backup (${e.message}).`;
+    keepNote.textContent = `That isn't a StreamerSpace backup (${e.message}).`;
   }
 });

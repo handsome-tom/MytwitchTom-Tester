@@ -25,7 +25,9 @@ addEventListener("message", (e) => {
 
 async function signIn() {
   const state = crypto.randomUUID();
-  const q = new URLSearchParams({ response_type: "token", client_id: CLIENT_ID, redirect_uri: HUB, scope: "", state });
+  // Who you are, plus your channel's mods and the channels you mod (Streamer Buddy System
+  // fills its "Your mods" and "Channels I mod" groups from them). Nothing else.
+  const q = new URLSearchParams({ response_type: "token", client_id: CLIENT_ID, redirect_uri: HUB, scope: "moderation:read user:read:moderated_channels", state });
   const win = await chrome.windows.create({ url: `https://id.twitch.tv/oauth2/authorize?${q}`, type: "popup", width: 520, height: 760 });
   const tabId = win.tabs[0].id;
   const watch = (id, change) => {

@@ -2,7 +2,7 @@
 // flag appears. Click it and the line goes to the streamer's quick strip in
 // Streamer Buddy System (with who said it and who flagged it, for 5 minutes),
 // and it glows in the chat of everyone connected with that streamer who's
-// watching, in the colour of whoever flagged it. Only people with Twitch Space
+// watching, in the colour of whoever flagged it. Only people with StreamerSpace
 // see the glow: it can't change Twitch's chat for anyone else.
 //
 // The flag only appears in the chat of a channel you and its streamer have both

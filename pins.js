@@ -45,7 +45,7 @@ function alive() {
 function save() {
   if (!alive()) return;
   chrome.storage.sync.set({ [STORE_KEY]: pins }, () => {
-    if (chrome.runtime.lastError) console.warn("Twitch Space: couldn't save pinned emotes:", chrome.runtime.lastError.message);
+    if (chrome.runtime.lastError) console.warn("StreamerSpace: couldn't save pinned emotes:", chrome.runtime.lastError.message);
   });
 }
 
